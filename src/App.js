@@ -4,7 +4,7 @@ import PokemonCard from './pokemon-card';
 
 function App() {
 
-  async function fetchPokemonLinks({ pageParam = "https://pokeapi.co/api/v2/pokemon?limit=20&offset=0" }) {
+  async function fetchPokemonBatch({ pageParam = "https://pokeapi.co/api/v2/pokemon?limit=20&offset=0" }) {
     const result = await fetch(pageParam);
     return result.json();
   }
@@ -18,7 +18,7 @@ function App() {
     data,
     fetchNextPage,
     isFetchingNextPage
-  } = useInfiniteQuery('pokemons', fetchPokemonLinks, {
+  } = useInfiniteQuery('pokemons', fetchPokemonBatch, {
     getNextPageParam: (lastPage, pages) => pages[pages.length - 1].next
   });
 
