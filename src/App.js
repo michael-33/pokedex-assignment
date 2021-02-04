@@ -1,23 +1,45 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import { useInfiniteQuery } from 'react-query';
+import PokemonCard from './pokemon-card';
 
 function App() {
+
+  async function fetchPokemonLinks({ pageParam = "https://pokeapi.co/api/v2/pokemon?limit=20&offset=0" }) {
+    const result = await fetch(pageParam);
+    return result.json();
+  }
+
+  function handleScroll({ target }) {
+    const isPageBottom = (target.scrollHeight - target.scrollTop) === target.clientHeight;
+    if (isPageBottom) fetchNextPage();
+  }
+
+  const {
+    data,
+    fetchNextPage,
+    isFetchingNextPage
+  } = useInfiniteQuery('pokemons', fetchPokemonLinks, {
+    getNextPageParam: (lastPage, pages) => pages[pages.length - 1].next
+  });
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="h-full flex flex-col items-center">
+      <div className="h-full flex flex-row flex-wrap justify-around px-24 py-16 xs:py-0 overflow-y-auto" onScroll={handleScroll}>
+        {
+          data && data.pages.map((group, i) => (
+            <React.Fragment key={i}>
+              {
+                group.results.map(pokemonInfo => (
+                  <PokemonCard link={pokemonInfo.url} key={pokemonInfo.url} />
+                ))
+              }
+            </React.Fragment>
+          ))
+        }
+      </div>
+      {
+        isFetchingNextPage && <span className="text-4xl pb-4">Loading more...</span>
+      }
     </div>
   );
 }
